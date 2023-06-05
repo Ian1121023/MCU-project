@@ -480,10 +480,8 @@ void setangle() {
   String inputMessage;
   if (server.hasArg("angle")) {
     inputMessage = server.arg("angle");
-    // 將inputMessage轉換成你需要的格式（例如，將其轉換為整數）
-    angle = inputMessage.toInt();
-    // 在這裡使用angle
-    // ...
+    // 將inputMessage轉換成你需要的格式
+    angle = inputMessage.toInt()
     Serial.println("Set Angle: " + String(angle));   
   }
   String s  = HTTP_WEBPAGE; 
