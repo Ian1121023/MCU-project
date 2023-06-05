@@ -103,7 +103,7 @@ const String HTTP_PAGE_HEAD = "<!DOCTYPE html><html lang=\"en\"><head><meta name
 const String HTTP_PAGE_STYLE = "<style>.c{text-align: center;} div,input{padding:5px;font-size:1em;}  input{width:90%;}  body{text-align: center;font-family:verdana;} button{border:0;border-radius:0.6rem;background-color:#1fb3ec;color:#fdd;line-height:2.4rem;font-size:1.2rem;width:100%;} .q{float: right;width: 64px;text-align: right;} .button1 {background-color: #4CAF50;} .button2 {background-color: #008CBA;} .button3 {background-color: #f44336;} .button4 {background-color: #e7e7e7; color: black;} .button5 {background-color: #555555;} </style>";
 const String HTTP_PAGE_SCRIPT = "<script>function c(l){document.getElementById('s').value=l.innerText||l.textContent;document.getElementById('p').focus();}</script>";
 const String HTTP_PAGE_BODY= "</head><body><div style='text-align:left;display:inline-block;min-width:260px;'>";
-const String HTTP_PAGE_FORM = "<form action=\"/cmd1\" method=\"get\"><button class=\"button1\">Forward</button></form></br><form action=\"/cmd2\" method=\"get\"><button class=\"button2\">Backward</button></form></br><form action=\"/cmd3\" method=\"get\"><button class=\"button3\">Right</button></form></br><form action=\"/cmd4\" method=\"get\"><button class=\"button4\">Left</button></form></br><form action=\"/cmd5\" method=\"get\"><button class=\"button5\">Stop</button></form></br></div>";
+const String HTTP_PAGE_FORM = "<form action=\"/cmd1\" method=\"get\"><button class=\"button1\">Forward</button></form></br><form action=\"/cmd2\" method=\"get\"><button class=\"button2\">Backward</button></form></br><form action=\"/cmd3\" method=\"get\"><button class=\"button3\">Right</button></form></br><form action=\"/cmd4\" method=\"get\"><button class=\"button4\">Left</button></form></br><form action=\"/cmd5\" method=\"get\"><button class=\"button5\">Stop</button></form></br><form action=\"/setangle\" method=\"get\"><input type=\"number\" name=\"angle\" min=\"0\" max=\"360\"><input type=\"submit\" value=\"Set Angle\"></form></div>";
 const String HTTP_WEBPAGE = HTTP_PAGE_HEAD + HTTP_PAGE_STYLE + HTTP_PAGE_SCRIPT + HTTP_PAGE_BODY + HTTP_PAGE_FORM;
 const String HTTP_PAGE_END = "</div></body></html>";
 
@@ -152,7 +152,9 @@ void setup() {
   server.on("/cmd2", cmd2);
   server.on("/cmd3", cmd3);
   server.on("/cmd4", cmd4);  
-  server.on("/cmd5", cmd5);  
+  server.on("/cmd5", cmd5);
+  server.on("/setangle", setangle);
+  
 
   Serial.println("HTTP server started");
   server.begin();
@@ -280,7 +282,10 @@ void loop() {
   Serial.print(USR_MotorPower);
   Serial.print("\t");   
   Serial.println(PID_MotorPower);
-  
+
+  Serial.print("angle:\t");
+  Serial.print(angle);
+  Serial.println("\t");
   if (Heading==HeadingTgt) PID_MotorPower = 0;
   switch (command) {
     case CMD_STOP:
@@ -301,8 +306,8 @@ void loop() {
       
       break;
     case CMD_BACKWARD:
-      motor.motorForward(motorR,-USR_MotorPower - PID_MotorPower);
-      motor.motorForward(motorL,-USR_MotorPower + PID_MotorPower);
+      motor.motorReverse(motorR,-(-USR_MotorPower - PID_MotorPower));
+      motor.motorReverse(motorL,-(-USR_MotorPower + PID_MotorPower));
       break;
     case CMD_RIGHT:
       motor.motorForward(motorR, USR_MotorPower - PID_MotorPower);
@@ -469,5 +474,20 @@ void cmd5() {
   server.send(200, "text/html", s);
   command = CMD_STOP;
   Serial.println("Motor Stop");
+}
+
+void setangle() {
+  String inputMessage;
+  if (server.hasArg("angle")) {
+    inputMessage = server.arg("angle");
+    // 將inputMessage轉換成你需要的格式（例如，將其轉換為整數）
+    angle = inputMessage.toInt();
+    // 在這裡使用angle
+    // ...
+    Serial.println("Set Angle: " + String(angle));   
+  }
+  String s  = HTTP_WEBPAGE; 
+  s += HTTP_PAGE_END;  
+  server.send(200, "text/html", s);
 }
 ```
